@@ -12,7 +12,7 @@ with open(path.join(HERE, 'README.md')) as f:
 
 setup(
     name="backwork-notifier-http",
-    version="0.1.30",
+    version="0.1.2",
     description="Backwork plug-in for HTTP notifications.",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",

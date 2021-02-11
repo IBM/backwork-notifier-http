@@ -26,7 +26,7 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
         parser.add_argument(
             "--http-notifier-bearer",
             required=False,
-            help="""If set, this value will be used as a Bearer token and sent with the HTTP request.""",
+            help="""If set, this value will be used as an Authorization Bearer token and sent with the HTTP request.""",
         )
         parser.add_argument(
             "--http-notifier-basic-user",
@@ -36,17 +36,17 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
         parser.add_argument(
             "--http-notifier-basic-pass",
             required=False,
-            help="""If set, backwork will use this value (along with --http-notifier-basic-user) for the HTTP request basic authorization.""",
+            help="""If set, this value (along with --http-notifier-basic-user) will be used for basic auth and sent with the HTTP request.""",
         )
         parser.add_argument(
             "--http-notifier-method",
             required=False,
-            help="""The method to be used for the HTTP request. Choose from 'post', 'get', and 'put'. Default is 'post'.""",
+            help="""The method to be used for the HTTP request. Choose from 'post' or 'get'. Default is 'post'.""",
         )
         parser.add_argument(
             "--http-notifier-data",
             required=False,
-            help="""JSON string sent as the 'data' object with the HTTP request""",
+            help="""JSON string sent as the 'data' object with the HTTP request. Format as the following: '{"key": "value"}' """,
         )
         parser.add_argument(
             "--http-notifier-params",
@@ -68,7 +68,7 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
         )
 
     def log(self, msg=""):
-        print("backwork-notifier-http: {}".format(msg))
+        print("[backwork-notifier-http]: {}".format(msg))
 
     def addKeyToObject(self, key="", msg="", data={}):
         if len(key) == 0:
@@ -145,10 +145,9 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
                     )
                 )
 
+        # add authorization token if applicable
         if len(bearer) > 0:
             prelimHeaders["Authorization"] = "Bearer {}".format(bearer)
-        elif len(basicUser) > 0 and len(basicPass) > 0:
-            prelimHeaders["Authorization"] = "{}:{}".format(basicUser, basicPass)
 
         if len(_additionalHeaders) > 0:
             try:
@@ -168,20 +167,47 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
 
         try:
             self.log("Performing '{}' request on {}".format(method, url))
+            x = None
             if "get" in method:
-                x = requests.get(url, params=params, data=json.dumps(data) headers=headers)
-                self.log("Response:")
-                self.log(x.json())
-            elif "post" in method or "put" in method:
-                x = requests.post(url, params=params data=json.dumps(data), headers=headers)
-                self.log("Response:")
-                self.log(x.json())
+                if len(basicUser) > 0 and len(basicPass) > 0:
+                    x = requests.get(
+                        url,
+                        params=params,
+                        data=json.dumps(data),
+                        headers=headers,
+                        auth=(basicUser, basicPass),
+                    )
+                else:
+                    x = requests.get(
+                        url, params=params, data=json.dumps(data), headers=headers
+                    )
+            elif "post" in method:
+                if len(basicUser) > 0 and len(basicPass) > 0:
+                    x = requests.post(
+                        url,
+                        params=params,
+                        data=json.dumps(data),
+                        headers=headers,
+                        auth=(basicUser, basicPass),
+                    )
+                else:
+                    x = requests.post(
+                        url, params=params, data=json.dumps(data), headers=headers
+                    )
             else:
                 self.log(
-                    "Invalid method: '",
-                    method,
-                    "'. Please choose from 'get', 'post', or 'put'.",
+                    "Invalid method: '{}'. Please see the help menu for --http-notifier-method.".format(
+                        method
+                    ),
                 )
+
+            if x is not None:
+                self.log("Response: {}".format(str(x.status_code)))
+                if x.status_code >= 199 and x.status_code < 300:
+                    self.log(x.json())
+                else:
+                    self.log(x.text)
+
         except Exception as e:
             self.log(
                 "An error occured during the request to {}. Message: {}".format(
