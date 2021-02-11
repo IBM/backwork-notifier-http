@@ -12,7 +12,7 @@ with open(path.join(HERE, 'README.md')) as f:
 
 setup(
     name="backwork-notifier-http",
-    version="0.1.2",
+    version="0.1.3",
     description="Backwork plug-in for HTTP notifications.",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
@@ -26,8 +26,7 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
         "Operating System :: POSIX :: Linux",
-        # "Programming Language :: Python :: 2.7",
-        # "Programming Language :: Python :: 2 :: Only",
+        "Programming Language :: Python :: 3.8",
         'License :: OSI Approved :: Apache Software License',
         "Topic :: Database",
         "Topic :: System :: Archiving :: Backup",

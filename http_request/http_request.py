@@ -1,4 +1,4 @@
-"""Add support for HTTP notifications.
+"""Backwork plug-in for HTTP notifications. 
 """
 
 import requests
@@ -6,7 +6,7 @@ import json
 
 
 class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
-    """Send messages to an HTTP endpoint."""
+    """Trigger an HTTP request with backwork-notifier-http"""
 
     command = "http"
 
@@ -17,7 +17,7 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
 
     @classmethod
     def parse_args(cls, parser):
-        """Add command line argument parsing rules for HTTP requests."""
+        """Add command line argument parsing rules for notifications via HTTP requests."""
         parser.add_argument(
             "--http-notifier-url",
             required=False,
