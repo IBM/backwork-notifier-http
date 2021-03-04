@@ -3,6 +3,8 @@
 
 import requests
 import json
+import re
+import logging
 
 
 class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
@@ -78,13 +80,9 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
             paths = key.split(".")
             length = len(paths)
             if length == 6:
-                data[paths[0]][paths[1]][paths[2]][paths[3]][paths[4]][
-                    paths[5]
-                ] = "{}".format(msg)
+                data[paths[0]][paths[1]][paths[2]][paths[3]][paths[4]][paths[5]] = "{}".format(msg)
             elif length == 5:
-                data[paths[0]][paths[1]][paths[2]][paths[3]][paths[4]] = "{}".format(
-                    msg
-                )
+                data[paths[0]][paths[1]][paths[2]][paths[3]][paths[4]] = "{}".format(msg)
             elif length == 4:
                 data[paths[0]][paths[1]][paths[2]][paths[3]] = "{}".format(msg)
             elif length == 3:
@@ -104,6 +102,31 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
 
     def formatJson(self, data):
         return str(data).strip("'<>() ").replace("'", '"')
+
+    def redaction(self, msg):
+        REDACTED = '[REDACTED]'
+
+        print('type of msg is: ', type(msg))
+        print('msg is: ', str(msg))
+
+        msg = str(msg)
+        # Using MONGO_URI
+        credentials = re.search('(?<=:\/\/).*(?=@)', msg)
+        
+        if credentials:
+            credentials = credentials.group().split(':')
+            msg = msg.replace(credentials[0], REDACTED)
+            msg = msg.replace(credentials[1], REDACTED)
+        else: #Using MONGO_HOST
+            credentials = re.findall("(?<=\s)'\w+'", msg)
+            if credentials: 
+                msg = msg.replace(credentials[0], REDACTED)
+                msg = msg.replace(credentials[1], REDACTED)
+            else:
+                print("Coudn't find matches")
+
+        print("Redacted message is: ", msg);
+        return msg
 
     def notify(self, msg=""):
         """Notify an HTTP endpoint."""
@@ -159,9 +182,13 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
                     )
                 )
 
+        # redact service credentials.
+        msg = self.redaction(msg)
+
         # attach msg to data object to be sent
         data = self.addKeyToObject(key, msg, data)
 
+        print("data to send: ", data)
         # merge headers
         headers = {**prelimHeaders, **additionalHeaders}
 
