@@ -4,8 +4,6 @@
 import requests
 import json
 import re
-import logging
-
 
 class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
     """Trigger an HTTP request with backwork-notifier-http"""
@@ -106,10 +104,8 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
     def redaction(self, msg):
         REDACTED = '[REDACTED]'
 
-        print('type of msg is: ', type(msg))
-        print('msg is: ', str(msg))
-
         msg = str(msg)
+
         # Using MONGO_URI
         credentials = re.search('(?<=:\/\/).*(?=@)', msg)
         
@@ -125,7 +121,6 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
             else:
                 print("Coudn't find matches")
 
-        print("Redacted message is: ", msg);
         return msg
 
     def notify(self, msg=""):
@@ -188,7 +183,6 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
         # attach msg to data object to be sent
         data = self.addKeyToObject(key, msg, data)
 
-        print("data to send: ", data)
         # merge headers
         headers = {**prelimHeaders, **additionalHeaders}
 
