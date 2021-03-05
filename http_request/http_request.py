@@ -106,20 +106,25 @@ class HTTPRequestNotifier(object):  # pylint: disable=unused-variable
 
         msg = str(msg)
 
-        # Using MONGO_URI
-        credentials = re.search('(?<=:\/\/).*(?=@)', msg)
-        
-        if credentials:
-            credentials = credentials.group().split(':')
-            msg = msg.replace(credentials[0], REDACTED)
-            msg = msg.replace(credentials[1], REDACTED)
-        else: #Using MONGO_HOST
-            credentials = re.findall("(?<=\s)'\w+'", msg)
-            if credentials: 
+        try:
+            # Using MONGO_URI
+            credentials = re.search('(?<=:\/\/).*(?=@)', msg)
+            if credentials:
+                credentials = credentials.group().split(':')
                 msg = msg.replace(credentials[0], REDACTED)
                 msg = msg.replace(credentials[1], REDACTED)
-            else:
-                print("Coudn't find matches")
+            
+            #Using MONGO_HOST
+            else: 
+                credentials = re.findall("(?<=\s)'\w+'", msg)
+                if credentials: 
+                    msg = msg.replace(credentials[0], REDACTED)
+                    msg = msg.replace(credentials[1], REDACTED)
+                else:
+                    print("Coudn't find matches")
+                    
+        except Exception as e:
+            self.log("Unable to redact credentials... Error: {}".format(str(e)))
 
         return msg
 
