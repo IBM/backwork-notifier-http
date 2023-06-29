@@ -6,7 +6,7 @@ Support for HTTP notifications on [backwork](https://github.com/IBM/backwork).
 ## Installing
 You can use `pip` to install this plug-in directly:
 ```sh
-$ pip install backwork-notifier-http
+$ pip install backwork-notifier-http-new
 ```
 
 ## Using
